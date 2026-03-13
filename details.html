@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>Post Details</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+    /* Details Page Specific Styles */
+    .details-page header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .details-page .back {
+        color: white;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(5px);
+    }
+    
+    .details-page .back:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+    
+    .details-page .menu {
+        color: white;
+    }
+    
+    .details-page .menu:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .details-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Image Gallery Style */
+    .image-gallery {
+        background: white;
+        border-radius: 30px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .main-image-container {
+        position: relative;
+        width: 100%;
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        background: #f8f9fa;
+    }
+    
+    .main-image {
+        width: 100%;
+        height: auto;
+        max-height: 600px;
+        object-fit: contain;
+        transition: transform 0.5s ease;
+        display: block;
+    }
+    
+    .main-image:hover {
+        transform: scale(1.02);
+    }
+    
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        color: white;
+        padding: 20px;
+        text-align: center;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .main-image-container:hover .image-overlay {
+        transform: translateY(0);
+    }
+    
+    .image-overlay i {
+        font-size: 24px;
+        margin-right: 8px;
+    }
+    
+    .image-overlay span {
+        font-size: 16px;
+        font-weight: 500;
+    }
+    
+    .zoom-hint {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 50px;
+        font-size: 14px;
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+    }
+    
+    .zoom-hint i {
+        font-size: 16px;
+    }
+    
+    /* Content Card */
+    .content-card {
+        background: white;
+        border-radius: 30px;
+        padding: 35px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .content-card h1 {
+        font-size: 42px;
+        margin: 0 0 20px 0;
+        color: #333;
+        line-height: 1.3;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .description-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+    
+    .details-description {
+        font-size: 20px;
+        color: #555;
+        margin: 20px 0 30px;
+        padding: 25px;
+        background: linear-gradient(135deg, #f5f7ff 0%, #f0f3ff 100%);
+        border-radius: 20px;
+        line-height: 1.8;
+        border-left: 5px solid #667eea;
+        font-weight: 500;
+    }
+    
+    .details-content {
+        font-size: 18px;
+        line-height: 1.9;
+        color: #444;
+        margin: 30px 0;
+        padding: 20px 0;
+        border-top: 2px dashed #e0e0e0;
+        border-bottom: 2px dashed #e0e0e0;
+    }
+    
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin: 40px 0;
+    }
+    
+    .feature-item {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        padding: 25px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: 0.3s;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
+    }
+    
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
+    
+    .feature-text {
+        font-size: 16px;
+        color: #444;
+        font-weight: 500;
+        flex: 1;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin: 30px 0;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        transition: 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+        border-color: #667eea;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: white;
+        font-size: 24px;
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Download Button */
+    .download-section {
+        text-align: center;
+        margin: 40px 0;
+    }
+    
+    .download-btn-modern {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 50px;
+        border-radius: 60px;
+        font-size: 24px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.4s;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .download-btn-modern:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: 0.6s;
+    }
+    
+    .download-btn-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 50px rgba(102, 126, 234, 0.5);
+    }
+    
+    .download-btn-modern:hover:before {
+        left: 100%;
+    }
+    
+    .download-btn-modern i {
+        font-size: 28px;
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    /* Modal for Image Zoom */
+    .image-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .image-modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-image {
+        max-width: 90%;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 0 50px rgba(255,255,255,0.2);
+    }
+    
+    .close-modal {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        color: white;
+        font-size: 40px;
+        cursor: pointer;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+    
+    .close-modal:hover {
+        background: rgba(255,255,255,0.3);
+        transform: rotate(90deg);
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .details-container {
+            padding: 15px;
+        }
+        
+        .image-gallery {
+            padding: 15px;
+            border-radius: 25px;
+        }
+        
+        .main-image {
+            max-height: 350px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+        
+        .zoom-hint {
+            top: 15px;
+            right: 15px;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        
+        .content-card {
+            padding: 25px;
+            border-radius: 25px;
+        }
+        
+        .content-card h1 {
+            font-size: 28px;
+        }
+        
+        .description-badge {
+            font-size: 12px;
+            padding: 6px 16px;
+        }
+        
+        .details-description {
+            font-size: 16px;
+            padding: 20px;
+            margin: 15px 0 25px;
+        }
+        
+        .details-content {
+            font-size: 15px;
+            line-height: 1.8;
+            padding: 15px 0;
+        }
+        
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .feature-item {
+            padding: 20px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            text-align: left;
+            gap: 20px;
+        }
+        
+        .stat-icon {
+            margin: 0;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+        }
+        
+        .download-btn-modern {
+            width: 100%;
+            padding: 18px 30px;
+            font-size: 20px;
+        }
+        
+        .download-btn-modern i {
+            font-size: 24px;
+        }
+        
+        .close-modal {
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .modal-image {
+            max-width: 95%;
+            max-height: 80vh;
+        }
+    }
+    
+    /* Small Phones */
+    @media (max-width: 480px) {
+        .main-image {
+            max-height: 280px;
+        }
+        
+        .content-card h1 {
+            font-size: 24px;
+        }
+        
+        .details-description {
+            font-size: 15px;
+            padding: 15px;
+        }
+        
+        .stat-card {
+            padding: 15px;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+        }
+        
+        .download-btn-modern {
+            padding: 15px 25px;
+            font-size: 18px;
+        }
+    }
+    
+    /* Loading Skeleton */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 10px;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+</head>
+<body class="details-page">
+
+<header>
+    <a href="index.html" class="back"><i class="fas fa-arrow-left"></i></a>
+    <h2><i class="fas fa-file-alt"></i> DETAILS</h2>
+    <div class="menu" onclick="toggleMenu()">☰</div>
+</header>
+
+<div id="sidebar">
+    <a href="index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="#" onclick="showContactPage(); return false;"><i class="fas fa-envelope"></i> Contact</a>
+    <a href="#" onclick="showDeveloperPage(); return false;"><i class="fas fa-code"></i> Developer</a>
+</div>
+
+<!-- Image Zoom Modal -->
+<div class="image-modal" id="imageModal" onclick="closeImageModal()">
+    <span class="close-modal" onclick="closeImageModal(event)">&times;</span>
+    <img class="modal-image" id="modalImage" src="" alt="Zoomed Image">
+</div>
+
+<div class="details-container" id="detailsContainer">
+    <!-- Dynamic content will be loaded here -->
+    <div style="text-align: center; padding: 50px;">
+        <div class="skeleton" style="width: 100%; height: 400px; margin-bottom: 20px;"></div>
+        <div class="skeleton" style="width: 70%; height: 40px; margin: 20px auto;"></div>
+        <div class="skeleton" style="width: 90%; height: 100px; margin: 20px auto;"></div>
+    </div>
+</div>
+
+<footer class="footer">
+    <h1>Deve<span>loper</span></h1>
+    <p>EH Munna ( Programar X )</p>
+    <p>Whatsup Brother | This is MUNNA & Welcome back to গরিবের এলাকায়</p>
+    <h2>Follow ME</h2>
+    <div class="social">
+<a href="https://www.facebook.com/share/1AsUpMBQx6/"><i class="fab fa-facebook-f"></i></a>
+<a href="https://t.me/ehmunna9"><i class="fab fa-telegram"></i></a>
+<a href="https://wa.me/01922903581"><i class="fab fa-whatsapp"></i></a>
+</div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+    // Image Modal Functions
+    function openImageModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal(event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        const modal = document.getElementById('imageModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Override displayPostDetails function for better UI
+    const originalDisplayPostDetails = window.displayPostDetails;
+    
+    window.displayPostDetails = function(post, postId) {
+        const detailsContainer = document.getElementById('detailsContainer');
+        if (!detailsContainer) return;
+        
+        // Format features as grid
+        let featuresHtml = '';
+        if (post.features) {
+            const features = post.features.split('\n').filter(f => f.trim());
+            if (features.length > 0) {
+                featuresHtml = `
+                    <div class="features-grid">
+                        ${features.map(f => `
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">${escapeHtml(f.replace('✔', '').trim())}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+        
+        // Format stats
+        / Format stats
+        const statsHtml = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">${post.downloads || 0}</div>
+                        <div class="stat-label">Downloads</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">${post.views || 0}</div>
+                        <div class="stat-label">Views</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">${post.rating || '4.5'}</div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        detailsContainer.innerHTML = `
+            <div class="image-gallery">
+                <div class="main-image-container" onclick="openImageModal('${post.image || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800'}')">
+                    <img src="${post.image || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800'}" 
+                         class="main-image" 
+                         alt="${escapeHtml(post.title)}"
+                         loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800'">
+                    <div class="zoom-hint">
+                        <i class="fas fa-search-plus"></i>
+                        <span>Click to zoom</span>
+                    </div>
+                    <div class="image-overlay">
+                        <i class="fas fa-expand-alt"></i>
+                        <span>View Full Image</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <span class="description-badge">
+                    <i class="fas fa-info-circle"></i> PREMIUM CONTENT
+                </span>
+                
+                <h1>${escapeHtml(post.title)}</h1>
+                
+                <div class="details-description">
+                    <i class="fas fa-quote-left" style="color: #667eea; margin-right: 10px; opacity: 0.5;"></i>
+                    ${escapeHtml(post.description)}
+                </div>
+                
+                <div class="details-content">
+                    ${escapeHtml(post.content || 'No additional content available.').replace(/\n/g, '<br>')}
+                </div>
+                
+                ${featuresHtml}
+                
+                ${statsHtml}
+                
+                <div class="download-section">
+                    <a href="${post.downloadUrl || '#'}" 
+                       class="download-btn-modern" 
+                       onclick="return handleDownload(event, '${postId}')">
+                        <i class="fas fa-download"></i> 
+                        Download Now
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 15px; text-align: center; color: #666;">
+                    <i class="fas fa-share-alt" style="margin-right: 10px; color: #667eea;"></i>
+                    Share this post with your friends
+                    <div style="margin-top: 15px;">
+                        <a href="#" style="margin: 0 10px; color: #3b5998;"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" style="margin: 0 10px; color: #1da1f2;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="margin: 0 10px; color: #25d366;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+    
+    // Make functions global
+    window.openImageModal = openImageModal;
+    window.closeImageModal = closeImageModal;
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<title>EH GEN</title>
+<link rel="stylesheet" href="style.css">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+EH <span>GEN</span>
+</div>
+
+<div class="menu" onclick="toggleMenu()">
+☰
+</div>
+
+</header>
+
+<div id="sidebar">
+<a href="index.html">Home</a>
+<a href="#" onclick="showContactPage(); return false;">Contract</a>
+<a href="#" onclick="showDeveloperPage(); return false;">Developer</a>
+</div>
+
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Search posts...">
+</div>
+
+<section class="posts" id="postsContainer"></section>
+
+<div class="contact-box" id="contactBox" style="display: none;">
+<div class="contact-card">
+<i class="fab fa-whatsapp"></i>
+<div>
+<h3>Whatsapp</h3>
+<p>01922903581</p>
+</div>
+</div>
+
+<div class="contact-card">
+<i class="fas fa-envelope"></i>
+<div>
+<h3>Email</h3>
+<p>mdehmunnazone@gmail.com</p>
+</div>
+</div>
+
+<div class="contact-card">
+<i class="fab fa-telegram"></i>
+<div>
+<h3>Telegram</h3>
+<p>@ehmunna9</p>
+</div>
+</div>
+
+<div class="contact-card">
+<i class="fab fa-facebook"></i>
+<div>
+<h3>Facebook</h3>
+<p>EH Munna</p>
+</div>
+</div>
+</div>
+
+<div class="developer-box" id="developerBox" style="display: none; padding: 30px; text-align: center;">
+<img src="https://i.ibb.co.com/wNVSkzXB/IMG-20260313-200825.jpg/200/200" style="border-radius: 50%; width: 150px; height: 150px; object-fit: cover; border: 5px solid #5a54ff;">
+<h1 style="margin-top: 20px;">EH Munna</h1>
+<p style="font-size: 18px; color: #666;">Programar X | Web Developer</p>
+
+<div style="background: white; border-radius: 20px; padding: 25px; margin-top: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+<h2>About Developer</h2>
+<p style="font-size: 16px; line-height: 1.8;">Experienced web developer with expertise in HTML, CSS, JavaScript, and modern frameworks. Creating responsive and user-friendly websites.</p>
+
+<div style="margin-top: 20px; text-align: left;">
+<p><strong>📧 Email:</strong> mdehmunnazone@gmail.com</p>
+<p><strong>📱 WhatsApp:</strong> 01922903581</p>
+<p><strong>💻 Skills:</strong> HTML, CSS, JavaScript, React, Node.js</p>
+</div>
+</div>
+</div>
+
+<footer class="footer">
+<h1>Deve<span>loper</span></h1>
+<p>EH Munna ( Programar X )</p>
+<p>Whatsup Brother | This is MUNNA & Welcome back to গরিবের এলাকায়</p>
+<h2>Follow Me</h2>
+<div class="social">
+<a href="https://www.facebook.com/share/1AsUpMBQx6/"><i class="fab fa-facebook-f"></i></a>
+<a href="https://t.me/ehmunna9"><i class="fab fa-telegram"></i></a>
+<a href="https://wa.me/01922903581"><i class="fab fa-whatsapp"></i></a>
+</div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
